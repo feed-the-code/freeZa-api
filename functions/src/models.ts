@@ -12,9 +12,7 @@ export interface Item {
     adoptBy: string
     condition: ItemCondition
     status: ItemStatus
-    categories: string[]
-    amount: number
-    amountUnit: string
+    tags: string[]
 }
 
 export enum ItemCondition {
@@ -29,11 +27,4 @@ export enum ItemStatus {
     Closed = 'closed',
     Archive = 'archive',
     Deleted = 'deleted',
-}
-
-export interface ItemCategory{
-    id: string
-    name: string
-    parent: string
-    active: boolean
 }

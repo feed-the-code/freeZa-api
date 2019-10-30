@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as express from 'express';
 import * as admin from 'firebase-admin';
-import { Item, ItemStatus } from './models';
+import { Item, ItemStatus, ItemCategory } from './models';
 import * as uuid from 'uuid';
 
 admin.initializeApp(functions.config().firebase);
@@ -16,22 +16,26 @@ router.use(function (req, res, next) {
     if (token) {
         admin.auth().verifyIdToken(token)
             .then(decodedToken => {
-                req.params.userId = decodedToken.uid;
+                req.body.userId = decodedToken.uid;
                 next()
-            }).catch(function(error) {
+            }).catch(error => {
                 // Handle error
+                console.log(error)
             });
+    } else {
+        next()
     }
   })
 
 router.get('/', (req, res) => {
     res.json({version: '0.0.1'});
-    let addDoc = db.collection('test').add({ version: 1 })
-        .then(ref => console.log('added ', ref.id));
+    db.collection('test').add({ version: 1 })
+        .then(ref => console.log('added ', ref.id))
+        .catch();
 });
 
 router.post('/login', (req, res) => {
-    const token = req.header("Authorization")
+    // const token = req.header("Authorization")
 
     res.json({message: 'Hello world'});
 });
@@ -41,18 +45,22 @@ router.post('/item', (req, res) => {
         id: uuid.v1().replace('-', ''),
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        name: req.params.name,
-        offerBy: req.params.userId,
+        name: req.body.name,
+        offerBy: req.body.userId,
         adoptBy: '',
-        condition: req.params.condition,
+        condition: req.body.condition,
         status: ItemStatus.Open,
-        categories: req.params.categories,
-        amount: req.params.amount,
-        amountUnit: req.params.amountUnit,
+        tags: req.body.tags,
     }
 
     db.collection('Item').add(item)
         .then(ref => res.json(item))
+        .catch()
+})
+
+router.get('/item', (req, res) => {
+    db.collection('Item').get()
+        .then(r => res.json(r.docs))
         .catch()
 })
 
